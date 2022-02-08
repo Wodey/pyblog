@@ -153,21 +153,22 @@ class Db:
             return 1
 
         # 1 if it fails and 0 if it succeeds
-        def delete_user(self, id: int) -> int:
-            try:
-                with self.connection.cursor() as cursor:
-                    cursor.execute('USE PYBLOG')
+    def delete_user(self, id: int) -> int:
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute('USE PYBLOG')
 
-                    query = 'DELETE FROM USERS WHERE id = ?'
+                query = 'DELETE FROM USERS WHERE id = ?'
 
-                    cursor.execute(query, (id,))
+                cursor.execute(query, (id,))
 
-                    self.connection.commit()
-                    return 0
+                self.connection.commit()
+                return 0
 
-            except Error as e:
-                print(e)
-                return 1
+        except Error as e:
+            print(e)
+            return 1
+
 
     def __delete__(self):
         self.connection.close()
