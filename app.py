@@ -1,7 +1,9 @@
 from flask import Flask
+from db import Db
 
 app = Flask(__name__)
 
+db = Db()
 
 @app.route("/")
 def start():
@@ -78,4 +80,4 @@ def delete_an_article(id):
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
