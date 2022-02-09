@@ -18,14 +18,20 @@ class Db:
 
     # Create a new Article
     def create_article(self, data: {}):
-        cursor = self.connection.cursor()
-        cursor.execute('USE PYBLOG')
-        query = ('INSERT INTO Articles(title, description, content, date, author_id)'
-                 'VALUES (%s, %s, %s, %s, %s)')
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute('USE PYBLOG')
+                query = ('INSERT INTO Articles(title, description, content, date, author_id)'
+                         'VALUES (%s, %s, %s, %s, %s)')
 
-        cursor.execute(query, (data['title'], data['description'], data['content'], data['date'], data['author_id']))
+                cursor.execute(query, (data['title'], data['description'], data['content'], data['date'], data['author_id']))
 
-        cursor.close()
+                self.connection.commit()
+
+                return 0
+        except Error as err:
+            print(err)
+            return 1
 
     # It returns Article by id,
     # returns (id, title, description, content, date, author_id)
@@ -76,6 +82,8 @@ class Db:
 
                 cursor.execute(query)
 
+                self.connection.commit()
+
                 return 0
         except Error as e:
             print(e)
@@ -87,7 +95,7 @@ class Db:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
 
-                query = 'DELETE FROM ARTICLES WHERE id = ?'
+                query = 'DELETE FROM ARTICLES WHERE id = %s'
 
                 cursor.execute(query, (id,))
 
@@ -108,6 +116,8 @@ class Db:
                         'VALUES (%s, %s, %s)'
 
                 cursor.execute(query, (data['username'], data['password'], data['role']))
+
+                self.connection.commit()
 
                 return 0
 
@@ -146,6 +156,8 @@ class Db:
 
                 cursor.execute(query, (new_role, id))
 
+                self.connection.commit()
+
                 return 0
 
         except Error as err:
@@ -153,6 +165,7 @@ class Db:
             return 1
 
         # 1 if it fails and 0 if it succeeds
+
     def delete_user(self, id: int) -> int:
         try:
             with self.connection.cursor() as cursor:
@@ -168,7 +181,6 @@ class Db:
         except Error as e:
             print(e)
             return 1
-
 
     def __delete__(self):
         self.connection.close()
