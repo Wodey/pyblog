@@ -99,7 +99,7 @@ class Db:
             return 1
 
     # 1 if it fails and 0 if it succeeds
-    def make_an_user(self, data: {}) -> int:
+    def create_user(self, data: {}) -> int:
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
@@ -116,14 +116,14 @@ class Db:
             return 1
 
     # 1 if it fails and a user if it succeeds
-    def get_an_user(self, username: str) -> ():
+    def get_user(self, username: str) -> ():
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
 
-                query = 'SELECT * FROM Users WHERE id = %s'
+                query = 'SELECT * FROM Users WHERE username = %s'
 
-                cursor.execute(query, (id,))
+                cursor.execute(query, (username,))
 
                 result = None
                 for i in cursor:
@@ -140,8 +140,8 @@ class Db:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
 
-                query = 'UPDATE Users' \
-                        'SET role = %s' \
+                query = f'UPDATE Users ' \
+                        'SET role = %s ' \
                         'WHERE id = %s'
 
                 cursor.execute(query, (new_role, id))
@@ -158,7 +158,7 @@ class Db:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
 
-                query = 'DELETE FROM USERS WHERE id = ?'
+                query = 'DELETE FROM USERS WHERE id = %s'
 
                 cursor.execute(query, (id,))
 
@@ -176,8 +176,10 @@ class Db:
 
 if __name__ == "__main__":
     mydb = Db()
-    print(mydb.get_articles(1))
-    print(mydb.delete_article(3))
-    print(mydb.get_article(3))
-    print(mydb.get_articles(1))
+    mydb.create_user({'username': 'testuser', 'password': 'password', 'role': 0})
+    print(mydb.get_user('testuser'))
+    print(mydb.get_user('ivan'))
+    print(mydb.promote_user(2, 3))
+    print(mydb.get_user('olia'))
+    print(mydb.delete_user(4))
     # TEST NEW USER FUNCTIONS TOMMOROW
