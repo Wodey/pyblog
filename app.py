@@ -18,9 +18,12 @@ def start():
 
 @app.route("/get_articles/<int:page>")
 def get_articles(page):
-    # This route returns list of articles for one of the pages
-    # It returns only limited information required for displaying articles on the screen
-    # It should return id, title, short description(just a few first paragraphs), data and tags of an article
+    """
+    This route returns list of articles for one of the pages
+    It returns only limited information required for displaying articles on the screen
+    It should return id, title, short description(just a few first paragraphs), data and tags of an article
+
+    """
     raw_articles = db.get_articles(page)
     result = []
 
@@ -40,9 +43,12 @@ def get_articles(page):
 
 @app.route("/get_article/<int:id>")
 def get_article(id):
-    # This route return a whole article
-    # It gets an id of article
-    # It returns id, title, markdown, data, tags
+    """
+    This route return a whole article
+    It gets an id of article
+    It returns id, title, markdown, data, tags
+
+    """
     raw_article = db.get_article(id)
 
     return {
@@ -60,16 +66,22 @@ def get_article(id):
 # These routes control authentication
 @app.route("/admin/login", methods=["POST"])
 def login():
-    # This route control the login authentication
-    # It receives a login and password of a user
+    """
+    This route control the login authentication
+    It receives a login and password of a user
+
+    """
     pass
 
 
 @app.route("/admin/signup", methods=["POST"])
 def signup():
-    # This route let user signup for admin
-    # but after that they cannot do anything
-    # They need to get a permission from upper admin
+    """
+    This route let user signup for admin
+    but after that they cannot do anything
+    They need to get a permission from upper admin
+
+    """
     body = request.get_json()
 
     for i in {"username", "password"}:
@@ -84,11 +96,14 @@ def signup():
 
 @app.route("/admin/promote", methods=["POST"])
 def promote():
-    # This route let admin promote a user for higher permissions
-    # next rank 0 for usual user, rank 1 for editor, rank 2 for an admin
-    # usual user can't do anything, editor can create, edit articles, admin can make all that can editor and promote
-    # other people
-    # These route requires the caller to be authorized for admin rank
+    """
+    This route let admin promote a user for higher permissions
+    next rank 0 for usual user, rank 1 for editor, rank 2 for an admin
+    usual user can't do anything, editor can create, edit articles, admin can make all that can editor and promote
+    other people
+    These route requires the caller to be authorized for admin rank
+
+    """
     body = request.get_json()
 
     fields = {'uid', 'new_role'}
@@ -106,9 +121,12 @@ def promote():
 # These routes are acceptable only for admin accounts
 @app.route("/admin/make_article", methods=['POST'])
 def make_article():
-    # This route get a json body and add it to the database
-    # Caller should be admin or editor
-    # It returns 0 in success and 1 if it fails
+    """
+    This route get a json body and add it to the database
+    Caller should be admin or editor
+    It returns 0 in success and 1 if it fails
+
+    """
     body = request.get_json()
 
     fields = {'title', 'description', 'date', 'author_id', 'content'}
@@ -122,10 +140,13 @@ def make_article():
 
 @app.route("/admin/update_article", methods=['POST'])
 def update_article():
-    # This route receive a json body and update an article
-    # Caller should be admin or editor
-    # It returns 0 if it succeeds and 1 if it fails
-    # It gets body { id: ..., update: {...} }
+    """
+    This route receive a json body and update an article
+    Caller should be admin or editor
+    It returns 0 if it succeeds and 1 if it fails
+    It gets body { id: ..., update: {...} }
+
+    """
     body = request.get_json()
 
     if not body.get('update') or len(body.get('update').keys()) < 1:
@@ -139,16 +160,22 @@ def update_article():
 
 @app.route("/admin/delete_article/<int:id>")
 def delete_article(id):
-    # This route get an id of article and delete it
-    # Caller should be admin or editor
-    # It returns 0 if it succeeds and 1 if it fails
+    """
+    This route get an id of article and delete it
+    Caller should be admin or editor
+    It returns 0 if it succeeds and 1 if it fails
+
+    """
     return str(db.delete_article(id))
 
 
 @app.route("/admin/delete_user/<int:id>")
 def delete_user(id):
-    # This route deletes the user by id
-    # It returns 0 if it succeeds and 1 if it failss
+    """
+    This route deletes the user by id
+    It returns 0 if it succeeds and 1 if it fails
+
+    """
     return str(db.delete_user(id))
 
 

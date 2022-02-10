@@ -16,7 +16,6 @@ class Db:
         except Error as e:
             print(e)
 
-    # Create a new Article
     def create_article(self, data: {}):
         try:
             with self.connection.cursor() as cursor:
@@ -24,7 +23,8 @@ class Db:
                 query = ('INSERT INTO Articles(title, description, content, date, author_id)'
                          'VALUES (%s, %s, %s, %s, %s)')
 
-                cursor.execute(query, (data['title'], data['description'], data['content'], data['date'], data['author_id']))
+                cursor.execute(query,
+                               (data['title'], data['description'], data['content'], data['date'], data['author_id']))
 
                 self.connection.commit()
 
@@ -33,43 +33,55 @@ class Db:
             print(err)
             return 1
 
-    # It returns Article by id,
-    # returns (id, title, description, content, date, author_id)
     def get_article(self, id: int) -> ():
-        cursor = self.connection.cursor()
-        cursor.execute('USE PYBLOG')
-        query = f'SELECT * FROM ARTICLES WHERE id = {id}'
-        cursor.execute(query)
+        """
+        It returns Article by id,
+        returns (id, title, description, content, date, author_id)
 
-        result = None
-        for i in cursor:
-            result = i
+        """
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute('USE PYBLOG')
+                query = f'SELECT * FROM ARTICLES WHERE id = {id}'
+                cursor.execute(query)
 
-        cursor.close()
-        return result
+                result = None
+                for i in cursor:
+                    result = i
 
-    # It returns limited amount of articles for one page
-    # returns [(id, title, description, date, author_id)]
+                return result
+        except Error as err:
+            print(err)
+            return 1
+
     def get_articles(self, page: int) -> [()]:
-        cursor = self.connection.cursor()
-        cursor.execute('USE PYBLOG')
+        """
+        It returns limited amount of articles for one page
+        returns [(id, title, description, date, author_id)]
 
-        start = (page - 1) * 20
+        """
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute('USE PYBLOG')
 
-        query = f'SELECT id, title, description, date, author_id FROM Articles LIMIT {start}, 20'
+                start = (page - 1) * 20
 
-        cursor.execute(query)
+                query = f'SELECT id, title, description, date, author_id FROM Articles LIMIT {start}, 20'
 
-        result = []
+                cursor.execute(query)
 
-        for i in cursor:
-            result.append(i)
+                result = []
 
-        cursor.close()
-        return result
+                for i in cursor:
+                    result.append(i)
 
-    # 0 if it succeeds, 1 if it fails
+                return result
+        except Error as err:
+            print(err)
+            return 1
+
     def update_article(self, id: int, data: {}) -> int:
+        # 0 if it succeeds, 1 if it fails
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBlOG')
@@ -89,8 +101,8 @@ class Db:
             print(e)
             return 1
 
-    # 1 if it fails and 0 if it succeeds
     def delete_article(self, id: int) -> int:
+        # 1 if it fails and 0 if it succeeds
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
@@ -106,8 +118,8 @@ class Db:
             print(e)
             return 1
 
-    # 1 if it fails and 0 if it succeeds
     def create_user(self, data: {}) -> int:
+        # 1 if it fails and 0 if it succeeds
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
@@ -125,8 +137,8 @@ class Db:
             print(err)
             return 1
 
-    # 1 if it fails and a user if it succeeds
     def get_user(self, username: str) -> ():
+        # 1 if it fails and a user if it succeeds
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
@@ -144,8 +156,8 @@ class Db:
             print(err)
             return 1
 
-    # 1 if it fails and 0 if it succeeds
     def promote_user(self, id: int, new_role: int) -> int:
+        # 1 if it fails and 0 if it succeeds
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
@@ -164,9 +176,8 @@ class Db:
             print(err)
             return 1
 
-        # 1 if it fails and 0 if it succeeds
-
     def delete_user(self, id: int) -> int:
+        # 1 if it fails and 0 if it succeeds
         try:
             with self.connection.cursor() as cursor:
                 cursor.execute('USE PYBLOG')
