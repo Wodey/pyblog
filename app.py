@@ -1,11 +1,14 @@
-from flask import Flask, request
+from flask import Flask, request, session
 from db import Db
 import hashlib
 import binascii
+import secrets
 
 app = Flask(__name__)
 
 db = Db()
+
+app.secret_key = secrets.token_hex()
 
 salt = 21
 
@@ -71,6 +74,23 @@ def login():
     It receives a login and password of a user
 
     """
+    body = request.get_json()
+
+    user = db.get_user(body['username'])
+
+    if not user:
+        return f"The user with name {body['username']} doesn't exist"
+
+    password = binascii.unhexlify(user[2])
+
+    new_hashed_password = hashlib.pbkdf2_hmac('sha256', body['password'].encode('utf-8'), salt.to_bytes(2, byteorder='big'), 10000)
+
+    if password == new_hashed_password:
+        session['username'] = user[1]
+        session['role'] = user[3]
+        return '0'
+    else:
+        return "Incorrect password"
     pass
 
 
@@ -84,9 +104,17 @@ def signup():
     """
     body = request.get_json()
 
-    for i in {"username", "password"}:
+    for i in {"username", "password", "password2"}:
         if not i in body:
             return f"There is no {i} field in body"
+
+    search = db.get_user(body['username'])
+
+    if search:
+        return f"The user with username {search[1]} exists!"
+
+    if body['password'] != body['password2']:
+        return f"password isn't equal password2"
 
     hashed_password = hashlib.pbkdf2_hmac('sha256', body['password'].encode('utf-8'), salt.to_bytes(2, byteorder='big'),
                                           10000)
@@ -94,16 +122,40 @@ def signup():
     return str(db.create_user({'username': body['username'], 'password': binascii.hexlify(hashed_password), 'role': 1}))
 
 
+@app.route('/admin/logout')
+def logout():
+    """
+    This route controls logging out
+    It deletes current session
+
+    """
+    if not session.get('username'):
+        return "You didn't login"
+
+    session.pop('username', None)
+    session.pop('role', None)
+    return "0"
+
 @app.route("/admin/promote", methods=["POST"])
 def promote():
     """
     This route let admin promote a user for higher permissions
-    next rank 0 for usual user, rank 1 for editor, rank 2 for an admin
+    next rank 1 for usual user, rank 2 for editor, rank 3 for an admin
     usual user can't do anything, editor can create, edit articles, admin can make all that can editor and promote
     other people
     These route requires the caller to be authorized for admin rank
 
     """
+
+    # Check authorization
+    login_fields = {'username', 'role'}
+    for i in login_fields:
+        if not i in session:
+            return "Please login, to continue"
+
+    if session['role'] < 3:
+        return "You don't have permissions for such action"
+
     body = request.get_json()
 
     fields = {'uid', 'new_role'}
@@ -127,6 +179,15 @@ def make_article():
     It returns 0 in success and 1 if it fails
 
     """
+    # Check authorization
+    login_fields = {'username', 'role'}
+    for i in login_fields:
+        if not i in session:
+            return "Please login, to continue"
+
+    if session['role'] < 2:
+        return "You don't have permissions for such action"
+
     body = request.get_json()
 
     fields = {'title', 'description', 'date', 'author_id', 'content'}
@@ -147,6 +208,15 @@ def update_article():
     It gets body { id: ..., update: {...} }
 
     """
+    # Check authorization
+    login_fields = {'username', 'role'}
+    for i in login_fields:
+        if not i in session:
+            return "Please login, to continue"
+
+    if session['role'] < 2:
+        return "You don't have permissions for such action"
+
     body = request.get_json()
 
     if not body.get('update') or len(body.get('update').keys()) < 1:
@@ -166,6 +236,15 @@ def delete_article(id):
     It returns 0 if it succeeds and 1 if it fails
 
     """
+    # Check authorization
+    login_fields = {'username', 'role'}
+    for i in login_fields:
+        if not i in session:
+            return "Please login, to continue"
+
+    if session['role'] < 2:
+        return "You don't have permissions for such action"
+
     return str(db.delete_article(id))
 
 
@@ -176,6 +255,20 @@ def delete_user(id):
     It returns 0 if it succeeds and 1 if it fails
 
     """
+    # Check authorization
+    login_fields = {'username', 'role'}
+    for i in login_fields:
+        if not i in session:
+            return "Please login, to continue"
+
+    user = db.get_user_by_id(id)
+
+    if not user:
+        return f"The user with id {id} doesn't exist"
+
+    if session['role'] < 3 and session['role'] <= user[3]:
+        return "You don't have permissions for such action"
+
     return str(db.delete_user(id))
 
 

@@ -156,6 +156,25 @@ class Db:
             print(err)
             return 1
 
+    def get_user_by_id(self, id: int) -> ():
+        # 1 if it fails and a user if it succeeds
+        try:
+            with self.connection.cursor() as cursor:
+                cursor.execute('USE PYBLOG')
+
+                query = 'SELECT * FROM Users WHERE id = %s'
+
+                cursor.execute(query, (id,))
+
+                result = None
+                for i in cursor:
+                    result = i
+
+                return result
+        except Error as err:
+            print(err)
+            return 1
+
     def promote_user(self, id: int, new_role: int) -> int:
         # 1 if it fails and 0 if it succeeds
         try:
