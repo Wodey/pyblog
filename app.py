@@ -83,7 +83,8 @@ def login():
 
     password = binascii.unhexlify(user[2])
 
-    new_hashed_password = hashlib.pbkdf2_hmac('sha256', body['password'].encode('utf-8'), salt.to_bytes(2, byteorder='big'), 10000)
+    new_hashed_password = hashlib.pbkdf2_hmac('sha256', body['password'].encode('utf-8'),
+                                              salt.to_bytes(2, byteorder='big'), 10000)
 
     if password == new_hashed_password:
         session['username'] = user[1]
@@ -105,7 +106,7 @@ def signup():
     body = request.get_json()
 
     for i in {"username", "password", "password2"}:
-        if not i in body:
+        if i not in body:
             return f"There is no {i} field in body"
 
     search = db.get_user(body['username'])
@@ -136,6 +137,7 @@ def logout():
     session.pop('role', None)
     return "0"
 
+
 @app.route("/admin/promote", methods=["POST"])
 def promote():
     """
@@ -150,7 +152,7 @@ def promote():
     # Check authorization
     login_fields = {'username', 'role'}
     for i in login_fields:
-        if not i in session:
+        if i not in session:
             return "Please login, to continue"
 
     if session['role'] < 3:
@@ -161,7 +163,7 @@ def promote():
     fields = {'uid', 'new_role'}
 
     for i in fields:
-        if not i in body:
+        if i not in body:
             return f"There is no {i} fields in body"
 
     if not body['new_role'] in {1, 2, 3}:
@@ -182,7 +184,7 @@ def make_article():
     # Check authorization
     login_fields = {'username', 'role'}
     for i in login_fields:
-        if not i in session:
+        if i not in session:
             return "Please login, to continue"
 
     if session['role'] < 2:
@@ -193,7 +195,7 @@ def make_article():
     fields = {'title', 'description', 'date', 'author_id', 'content'}
 
     for i in fields:
-        if not i in body:
+        if i not in body:
             return f'There is no field {i} in the body'
 
     return str(db.create_article(body))
@@ -211,7 +213,7 @@ def update_article():
     # Check authorization
     login_fields = {'username', 'role'}
     for i in login_fields:
-        if not i in session:
+        if i not in session:
             return "Please login, to continue"
 
     if session['role'] < 2:
@@ -239,7 +241,7 @@ def delete_article(id):
     # Check authorization
     login_fields = {'username', 'role'}
     for i in login_fields:
-        if not i in session:
+        if i not in session:
             return "Please login, to continue"
 
     if session['role'] < 2:
@@ -258,7 +260,7 @@ def delete_user(id):
     # Check authorization
     login_fields = {'username', 'role'}
     for i in login_fields:
-        if not i in session:
+        if i not in session:
             return "Please login, to continue"
 
     user = db.get_user_by_id(id)
